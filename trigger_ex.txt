@@ -1,0 +1,41 @@
+-- Create sample table
+CREATE TABLE dogs (
+DOG_ID SERIAL PRIMARY KEY,
+NAME VARCHAR(20),
+STATUS VARCHAR(1)
+);
+
+-- Create function
+CREATE FUNCTION dogstat() RETURNS trigger AS $$
+BEGIN
+IF NEW.name='FIDO' THEN
+IF NEW.status='S' THEN
+UPDATE dogs SET STATUS='A' where name='FIDO';
+END IF;
+END IF;
+RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+-- Create trigger
+CREATE TRIGGER dogtrigg AFTER UPDATE ON dogs
+FOR EACH ROW EXECUTE PROCEDURE dogstat();
+
+-- Insert test
+INSERT INTO dogs(name,status) VALUES('FIDO','A');
+INSERT INTO dogs(name,status) VALUES('PLUTO','A');
+
+-- Ok lets test
+SELECT * FROM dogs;
+
+-- An update
+UPDATE dogs SET status='S' WHERE name='FIDO';
+
+-- Ok what happened?
+SELECT status FROM dogs WHERE name='FIDO';
+-- Nothing really! Noone can (S)ell FIDO! :-)
+
+-- What about PLUTO?
+UPDATE dogs SET status='S' WHERE name='PLUTO';
+SELECT status FROM dogs WHERE name='PLUTO';
